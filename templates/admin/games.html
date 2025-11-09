@@ -1,0 +1,74 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Games Management{% endblock %}
+{% block content %}
+<div class="management-header">
+    <h1>Games Management</h1>
+    <button onclick="document.getElementById('addGameForm').style.display='block'" class="btn btn-primary">
+        + Add New Game
+    </button>
+</div>
+
+<!-- Add Game Form (Initially Hidden) -->
+<div id="addGameForm" style="display:none;" class="card">
+    <h2>Add New Game</h2>
+    <form method="POST" action="{{ url_for('add_game') }}">
+        <div class="form-group">
+            <label>Game Name</label>
+            <input type="text" name="game_name" required>
+        </div>
+        <div class="form-group">
+            <label>Genre</label>
+            <input type="text" name="genre" required>
+        </div>
+        <div class="form-group">
+            <label>Developer</label>
+            <input type="text" name="developer" required>
+        </div>
+        <div class="form-group">
+            <label>Release Date</label>
+            <input type="date" name="release_date" required>
+        </div>
+        <div class="form-group">
+            <label>Max Players</label>
+            <input type="number" name="max_players" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Game</button>
+        <button type="button" onclick="document.getElementById('addGameForm').style.display='none'" class="btn btn-secondary">Cancel</button>
+    </form>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Game Name</th>
+                <th>Genre</th>
+                <th>Developer</th>
+                <th>Release Date</th>
+                <th>Max Players</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for game in games %}
+            <tr>
+                <td>{{ game.GAME_ID }}</td>
+                <td>{{ game.GAME_NAME }}</td>
+                <td>{{ game.GENRE }}</td>
+                <td>{{ game.DEVELOPER }}</td>
+                <td>{{ game.RELEASE_DATE }}</td>
+                <td>{{ game.MAX_PLAYERS }}</td>
+                <td>
+                    <a href="{{ url_for('delete_game', game_id=game.GAME_ID) }}" 
+                       onclick="return confirm('Are you sure?')" 
+                       class="icon-btn icon-btn-delete">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

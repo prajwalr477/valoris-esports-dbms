@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}{{ tournament.TOURNAMENT_NAME if tournament else 'Tournament' }}{% endblock %}
+
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+    
+    {% if tournament %}
+    
+    <!-- Back Button -->
+    <a href="{{ url_for('tournaments') }}" class="btn btn-secondary" style="margin-bottom: 1.5rem;">
+        <i class="bi bi-arrow-left"></i> Back to Tournaments
+    </a>
+
+
+    <!-- Tournament Header -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div style="flex: 1; min-width: 300px;">
+                <h1 style="margin: 0 0 0.5rem 0;">{{ tournament.TOURNAMENT_NAME }}</h1>
+                <p style="color: var(--text-secondary); margin: 0; font-size: 1.1rem;">
+                    <i class="bi bi-joystick"></i> {{ tournament.GAME_NAME }}
+                </p>
+            </div>
+            <span class="status-badge status-{{ tournament.STATUS|lower }}" 
+                  style="padding: 0.5rem 1.5rem; border-radius: 2rem; font-size: 1rem; font-weight: 600;">
+                {{ tournament.STATUS }}
+            </span>
+        </div>
+    </div>
+
+
+    <!-- Tournament Information Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        
+        <!-- Basic Info Card -->
+        <div class="card">
+            <h2 style="margin-top: 0;"><i class="bi bi-info-circle"></i> Tournament Information</h2>
+            <p><i class="bi bi-geo-alt"></i> <strong>Location:</strong> {{ tournament.LOCATION }}</p>
+            <p><i class="bi bi-hourglass-split"></i> <strong>Duration:</strong> {{ tournament.DURATION }}</p>
+            <p><i class="bi bi-currency-dollar"></i> <strong>Prize Pool:</strong> 
+               <span style="font-size: 1.5rem; font-weight: 700; color: var(--accent-green);">
+                   ${{ "{:,}".format(tournament.PRIZE_POOL|int) }}
+               </span>
+            </p>
+        </div>
+
+
+        <!-- Winner Card (Only for Completed Tournaments) -->
+        {% if tournament.STATUS == 'COMPLETED' and tournament.WINNER_NAME %}
+        <div class="card" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000; border: 3px solid #ffa000;">
+            <h2 style="margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-trophy-fill" style="font-size: 2rem;"></i>
+                Tournament Champion
+            </h2>
+            <p style="font-size: 1.8rem; font-weight: 800; margin: 1rem 0;">
+                {{ tournament.WINNER_NAME }}
+            </p>
+            <div style="background: rgba(0,0,0,0.1); padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
+                <p style="margin: 0; font-size: 0.9rem; font-weight: 600;">Prize Awarded:</p>
+                <p style="margin: 0.25rem 0 0 0; font-size: 1.5rem; font-weight: 700;">
+                    ${{ "{:,}".format(tournament.PRIZE_POOL|int) }}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+
+    </div>
+
+
+    <!-- Standings Section -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2><i class="bi bi-list-ol"></i> Tournament Standings</h2>
+        {% if tournament_standings %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Rank</th>
+                        <th>Team Name</th>
+                        <th style="text-align: center;">Wins</th>
+                        <th style="text-align: center;">Losses</th>
+                        <th style="text-align: center;">Points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in tournament_standings %}
+                    <tr class="{% if loop.index == 1 and tournament.STATUS == 'COMPLETED' %}winner-row{% endif %}">
+                        <td style="text-align: center; font-weight: 700; font-size: 1.2rem;">
+                            {% if loop.index == 1 %}
+                                <i class="bi bi-trophy-fill" style="color: #ffd700; font-size: 1.5rem;"></i>
+                            {% elif loop.index == 2 %}
+                                <i class="bi bi-award" style="color: #c0c0c0; font-size: 1.3rem;"></i>
+                            {% elif loop.index == 3 %}
+                                <i class="bi bi-award" style="color: #cd7f32; font-size: 1.3rem;"></i>
+                            {% else %}
+                                #{{ team.RANKING }}
+                            {% endif %}
+                        </td>
+                        <td class="{% if loop.index == 1 %}winner-name{% endif %}">
+                            {{ team.TEAM_NAME }}
+                        </td>
+                        <td style="text-align: center; color: var(--accent-green); font-weight: 600;">{{ team.WINS }}</td>
+                        <td style="text-align: center; color: var(--accent-orange); font-weight: 600;">{{ team.LOSSES }}</td>
+                        <td style="text-align: center; font-weight: 700; font-size: 1.1rem;">{{ team.POINTS }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+            <i class="bi bi-info-circle"></i> Standings will be updated once matches begin.
+        </p>
+        {% endif %}
+    </div>
+
+
+
+    <!-- Live Streams Section -->
+    <div class="card">
+        <h2><i class="bi bi-broadcast"></i> Live Streams</h2>
+        {% if streams %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+            {% for stream in streams %}
+            <a href="{{ stream.URL }}" target="_blank" class="btn btn-primary" 
+               style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem;">
+                <i class="bi bi-play-circle-fill" style="font-size: 1.5rem;"></i>
+                <div style="text-align: left;">
+                    <div style="font-weight: 700;">{{ stream.PLATFORM }}</div>
+                    <div style="font-size: 0.85rem; opacity: 0.9;">{{ stream.LANGUAGE }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+            <i class="bi bi-info-circle"></i> No live streams available for this tournament yet.
+        </p>
+        {% endif %}
+    </div>
+
+
+    {% else %}
+    <!-- Tournament Not Found -->
+    <div class="card" style="text-align: center; padding: 3rem;">
+        <i class="bi bi-exclamation-triangle" style="font-size: 4rem; color: var(--accent-orange); margin-bottom: 1rem;"></i>
+        <h2>Tournament Not Found</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">The tournament you're looking for doesn't exist or has been removed.</p>
+        <a href="{{ url_for('tournaments') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Back to Tournaments
+        </a>
+    </div>
+    {% endif %}
+
+
+</div>
+
+
+<style>
+.status-badge {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-upcoming {
+    background: linear-gradient(135deg, #6d4c41 0%, #8d6e63 100%);
+    color: white;
+}
+.status-ongoing {
+    background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+    color: white;
+}
+.status-completed {
+    background: linear-gradient(135deg, #2e7d32 0%, #388e3c 100%);
+    color: white;
+}
+
+
+/* Standings styling */
+.winner-row {
+    background: linear-gradient(90deg, rgba(255,215,0,0.2) 0%, transparent 100%);
+}
+.winner-name {
+    font-weight: 700;
+}
+</style>
+
+
+{% endblock %}

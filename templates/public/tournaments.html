@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Tournaments{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+    <h1 style="margin-bottom: 2rem;">
+        <i class="bi bi-trophy-fill"></i> Browse Tournaments
+    </h1>
+
+    <!-- Filter Section -->
+    <div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <form method="get" action="{{ url_for('tournaments') }}" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <label for="status" style="font-weight: 600; margin: 0;">
+                <i class="bi bi-funnel"></i> Filter by Status:
+            </label>
+            <select id="status" name="status" class="form-control" style="width: 200px;">
+                {% for s in statuses %}
+                <option value="{{ '' if s == 'ALL' else s }}" 
+                        {% if selected == s %}selected{% endif %}>
+                    {{ s }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Apply Filter
+            </button>
+            {% if selected and selected != 'ALL' %}
+            <a href="{{ url_for('tournaments') }}" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Clear Filter
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Tournaments Grid -->
+    {% if tournaments %}
+    <div class="card-grid">
+        {% for tournament in tournaments %}
+        <div class="card" style="display: flex; flex-direction: column;">
+            <!-- Header with Status Badge -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <h3 class="card-title" style="margin: 0; flex: 1;">
+                    {{ tournament.TOURNAMENT_NAME }}
+                </h3>
+                <span class="status-badge status-{{ tournament.STATUS|lower }}" 
+                      style="padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.85rem; font-weight: 600; white-space: nowrap; margin-left: 1rem;">
+                    {{ tournament.STATUS or 'UPCOMING' }}
+                </span>
+            </div>
+
+            <!-- Tournament Info -->
+            <div style="flex: 1;">
+                <p style="margin: 0.5rem 0;">
+                    <i class="bi bi-geo-alt" style="color: var(--accent-cyan);"></i>
+                    <strong>Location:</strong> {{ tournament.LOCATION }}
+                </p>
+                <p style="margin: 0.5rem 0;">
+                    <i class="bi bi-currency-dollar" style="color: var(--accent-green);"></i>
+                    <strong>Prize Pool:</strong> ${{ "{:,}".format(tournament.PRIZE_POOL|int) }}
+                </p>
+                <p style="margin: 0.5rem 0;">
+                    <i class="bi bi-hourglass-split" style="color: var(--accent-orange);"></i>
+                    <strong>Duration:</strong> {{ tournament.DURATION }}
+                </p>
+
+                <!-- Winner Display for Completed Tournaments -->
+                {% if tournament.STATUS == 'COMPLETED' and tournament.WINNER_NAME %}
+                <div style="margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); border-radius: 0.5rem; color: #000;">
+                    <p style="margin: 0; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-trophy-fill" style="font-size: 1.5rem;"></i>
+                        <span>Champion: {{ tournament.WINNER_NAME }}</span>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- View Details Button -->
+            <a href="{{ url_for('tournament_detail', tournament_id=tournament.TK_ID) }}" 
+               class="btn btn-primary" 
+               style="margin-top: 1rem; width: 100%;">
+                <i class="bi bi-eye"></i> View Details & Standings
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 3rem;">
+        <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-tertiary); margin-bottom: 1rem;"></i>
+        <p style="color: var(--text-secondary); font-size: 1.1rem; margin: 0;">
+            No tournaments found for this filter.
+        </p>
+        {% if selected and selected != 'ALL' %}
+        <a href="{{ url_for('tournaments') }}" class="btn btn-secondary" style="margin-top: 1rem;">
+            View All Tournaments
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.status-badge {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-upcoming {
+    background: linear-gradient(135deg, #6d4c41 0%, #8d6e63 100%);
+    color: white;
+}
+.status-ongoing {
+    background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+    color: white;
+}
+.status-completed {
+    background: linear-gradient(135deg, #2e7d32 0%, #388e3c 100%);
+    color: white;
+}
+</style>
+{% endblock %}

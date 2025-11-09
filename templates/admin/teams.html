@@ -1,0 +1,102 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Teams Management{% endblock %}
+
+
+{% block content %}
+<div class="management-header">
+    <h1>Teams Management</h1>
+    <button class="btn btn-primary" id="addTeamBtn">+ Add New Team</button>
+</div>
+
+
+<!-- Add Team Form -->
+<div id="addTeamForm" style="display:none;" class="card">
+    <h2>Create New Team</h2>
+    <form method="POST" action="{{ url_for('add_team') }}" id="teamForm">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Team Name *</label>
+                <input type="text" name="team_name" required placeholder="e.g., Red Dragons">
+            </div>
+            <div class="form-group">
+                <label>Region *</label>
+                <input type="text" name="region" required placeholder="e.g., North America">
+            </div>
+            <div class="form-group">
+                <label>Coach *</label>
+                <input type="text" name="coach" required placeholder="e.g., John Smith">
+            </div>
+            <div class="form-group">
+                <label>Game *</label>
+                <select name="game_id" required>
+                    <option value="">-- Select a Game --</option>
+                    {% if games %}
+                        {% for game in games %}
+                        <option value="{{ game.GAME_ID }}">{{ game.GAME_NAME }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">No games available</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary">Create Team</button>
+            <button type="button" class="btn btn-secondary" id="cancelTeamBtn">Cancel</button>
+        </div>
+    </form>
+</div>
+
+
+<!-- Teams List -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Team Name</th>
+                <th>Game</th>
+                <th>Region</th>
+                <th>Coach</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if teams %}
+                {% for team in teams %}
+                <tr>
+                    <td>{{ team.TEAM_ID }}</td>
+                    <td><strong>{{ team.TEAM_NAME }}</strong></td>
+                    <td>{{ team.GAME_NAME }}</td>
+                    <td>{{ team.REGION }}</td>
+                    <td>{{ team.COACH }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_team', team_id=team.TEAM_ID) }}" style="display:inline;" onsubmit="return confirm('Delete this team?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 2rem;">No teams found</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+document.getElementById('addTeamBtn').addEventListener('click', function() {
+    document.getElementById('addTeamForm').style.display = 'block';
+});
+
+
+document.getElementById('cancelTeamBtn').addEventListener('click', function() {
+    document.getElementById('addTeamForm').style.display = 'none';
+    document.getElementById('teamForm').reset();
+});
+</script>
+{% endblock %}

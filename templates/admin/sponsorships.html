@@ -1,0 +1,204 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Sponsorships Management{% endblock %}
+
+{% block content %}
+<div class="management-header">
+    <h1>Sponsorships Management</h1>
+    <button class="btn btn-primary" id="addSponsorshipBtn">+ Add Sponsorship</button>
+</div>
+
+<!-- Add Sponsorship Form -->
+<div id="addSponsorshipForm" style="display:none;" class="card">
+    <h2>Add Sponsorship</h2>
+    <form method="POST" action="{{ url_for('add_sponsorship') }}">
+        <div class="form-group">
+            <label>Company Name *</label>
+            <input type="text" name="company" required>
+        </div>
+        <div class="form-group">
+            <label>Industry *</label>
+            <input type="text" name="industry" required>
+        </div>
+        <div class="form-group">
+            <label>Team *</label>
+            <select name="team_id" required>
+                <option value="">-- Select Team --</option>
+                {% for team in teams %}
+                <option value="{{ team.TEAM_ID }}">{{ team.TEAM_NAME }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Amount ($) *</label>
+            <input type="number" name="amount" step="0.01" required>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary">Add Sponsorship</button>
+            <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<!-- Edit Sponsorship Modal -->
+<div id="editSponsorshipModal" style="display:none;" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Edit Sponsorship</h2>
+        <form method="POST" id="editForm">
+            <input type="hidden" name="sponsorship_id" id="editSponsorshipId">
+            <div class="form-group">
+                <label>Company Name *</label>
+                <input type="text" name="company" id="editCompany" required>
+            </div>
+            <div class="form-group">
+                <label>Industry *</label>
+                <input type="text" name="industry" id="editIndustry" required>
+            </div>
+            <div class="form-group">
+                <label>Team *</label>
+                <select name="team_id" id="editTeamId" required>
+                    <option value="">-- Select Team --</option>
+                    {% for team in teams %}
+                    <option value="{{ team.TEAM_ID }}">{{ team.TEAM_NAME }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount ($) *</label>
+                <input type="number" name="amount" id="editAmount" step="0.01" required>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button type="submit" class="btn btn-primary">Update Sponsorship</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sponsorships Table -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Company</th>
+                <th>Industry</th>
+                <th>Team</th>
+                <th>Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if sponsorships %}
+            {% for sponsor in sponsorships %}
+            <tr>
+                <td>{{ sponsor.ID }}</td>
+                <td>{{ sponsor.NAME }}</td>
+                <td>{{ sponsor.INDUSTRY }}</td>
+                <td>{{ sponsor.TEAM_NAME or 'N/A' }}</td>
+                <td>${{ "{:,}".format(sponsor.AMOUNT) }}</td>
+                <td>
+                    <button class="btn btn-sm btn-edit" 
+                        data-id="{{ sponsor.ID }}" 
+                        data-name="{{ sponsor.NAME }}" 
+                        data-industry="{{ sponsor.INDUSTRY }}" 
+                        data-amount="{{ sponsor.AMOUNT }}"
+                        data-team="{{ sponsor.TEAM_NAME or '' }}"
+                        onclick="openEditModal(this)" 
+                        title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <form method="POST" action="{{ url_for('delete_sponsorship', sponsorship_id=sponsor.ID) }}" style="display:inline;" onsubmit="return confirm('Delete this sponsorship?');">
+                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem;">No sponsorships found</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.btn-edit {
+    background-color: #ffa726;
+    color: white;
+    margin-right: 0.5rem;
+}
+
+.btn-edit:hover {
+    background-color: #fb8c00;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--bg-secondary, #0a1929);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+}
+</style>
+
+<script>
+// Add Sponsorship Button
+document.getElementById('addSponsorshipBtn').addEventListener('click', function() {
+    document.getElementById('addSponsorshipForm').style.display = 'block';
+});
+
+// Cancel Button
+document.getElementById('cancelBtn').addEventListener('click', function() {
+    document.getElementById('addSponsorshipForm').style.display = 'none';
+});
+
+// Open Edit Modal
+function openEditModal(button) {
+    const id = button.getAttribute('data-id');
+    const name = button.getAttribute('data-name');
+    const industry = button.getAttribute('data-industry');
+    const amount = button.getAttribute('data-amount');
+    const teamName = button.getAttribute('data-team');
+    
+    document.getElementById('editSponsorshipId').value = id;
+    document.getElementById('editCompany').value = name;
+    document.getElementById('editIndustry').value = industry;
+    document.getElementById('editAmount').value = amount;
+    
+    // Set team dropdown
+    const teamSelect = document.getElementById('editTeamId');
+    for (let i = 0; i < teamSelect.options.length; i++) {
+        if (teamSelect.options[i].text === teamName) {
+            teamSelect.selectedIndex = i;
+            break;
+        }
+    }
+    
+    document.getElementById('editForm').action = `/admin/sponsorships/update/${id}`;
+    document.getElementById('editSponsorshipModal').style.display = 'flex';
+}
+
+
+// Close Edit Modal
+function closeEditModal() {
+    document.getElementById('editSponsorshipModal').style.display = 'none';
+}
+</script>
+{% endblock %}

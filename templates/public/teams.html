@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Browse Teams{% endblock %}
+{% block content %}
+<h1><i class="bi bi-people-fill"></i> Browse Teams</h1>
+
+<!-- Filter Section - Exact structure from tournaments.html -->
+<div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
+    <form method="GET" action="{{ url_for('teams') }}" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <label for="region"><i class="bi bi-funnel"></i> Filter by Region:</label>
+            <select id="region" name="region" onchange="this.form.submit()">
+                <option value="">ALL</option>
+                {% for region_item in regions %}
+                    <option value="{{ region_item.REGION }}" 
+                        {% if selected_region == region_item.REGION %}selected{% endif %}>
+                        {{ region_item.REGION }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if selected_region %}
+        <a href="{{ url_for('teams') }}" class="btn btn-primary"><i class="bi bi-search"></i> Clear Filter</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="card-grid">
+    {% for team in teams %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{{ team.TEAM_NAME }}</h3>
+        </div>
+        <p><i class="bi bi-controller"></i> Game: {{ team.GAME_NAME }}</p>
+        <p><i class="bi bi-geo-alt"></i> Region: {{ team.REGION }}</p>
+        <p><i class="bi bi-trophy"></i> Points: {{ team.POINTS }}</p>
+        <p><i class="bi bi-star"></i> Win Rate: {{ team.WIN_PERCENTAGE or 0 }}%</p>
+        <a href="{{ url_for('team_detail', team_id=team.TEAM_ID) }}" class="btn btn-secondary">View Details</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

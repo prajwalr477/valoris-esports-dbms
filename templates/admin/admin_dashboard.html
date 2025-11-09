@@ -1,0 +1,35 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="admin-header">
+    <h1>Admin Dashboard</h1>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_teams }}</div>
+        <div class="stat-label">Total Teams</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_tournaments }}</div>
+        <div class="stat-label">Total Tournaments</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_games }}</div>
+        <div class="stat-label">Total Games</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">${{ "{:,}".format(stats.total_sponsorships) }}</div>
+        <div class="stat-label">Total Sponsorships</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Quick Actions</h2>
+    <div class="admin-actions">
+        <a href="{{ url_for('admin_tournaments') }}" class="btn btn-primary">+ Create Tournament</a>
+        <a href="{{ url_for('admin_teams') }}" class="btn btn-primary">+ Add Team</a>
+        <a href="{{ url_for('admin_statistics') }}" class="btn btn-success">Record Match Result</a>
+    </div>
+</div>
+{% endblock %}

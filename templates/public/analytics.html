@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Analytics Dashboard{% endblock %}
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+{% endblock %}
+{% block content %}
+<!-- htmlhint attr-unsafe-chars:false -->
+<!-- jshint -W041 -->
+<!-- jscs:disable -->
+<h1><i class="bi bi-graph-up"></i> Analytics & Insights</h1>
+
+<div class="card">
+    <h2>Top Teams by Points</h2>
+    <canvas id="topTeamsChart"></canvas>
+</div>
+
+<div class="card">
+    <h2>Teams by Region</h2>
+    <canvas id="regionChart"></canvas>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Top Teams Chart
+    if (document.getElementById('topTeamsChart')) {
+        const topTeamsCtx = document.getElementById('topTeamsChart').getContext('2d');
+        new Chart(topTeamsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ top_teams_json | safe }},
+                datasets: [{
+                    label: 'Points',
+                    data: {{ top_teams_points | safe }},
+                    backgroundColor: 'rgba(0, 212, 255, 0.6)',
+                    borderColor: 'rgba(0, 212, 255, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // Region Chart
+    if (document.getElementById('regionChart')) {
+        const regionCtx = document.getElementById('regionChart').getContext('2d');
+        new Chart(regionCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ region_labels | safe }},
+                datasets: [{
+                    data: {{ region_counts | safe }},
+                    backgroundColor: ['#00d4ff', '#7c3aed', '#39ff14', '#ff1744', '#ffd700']
+                }]
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

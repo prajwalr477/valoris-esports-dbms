@@ -1,0 +1,281 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Tournaments Management{% endblock %}
+
+{% block content %}
+<div class="management-header">
+    <h1>Tournaments Management</h1>
+    <button class="btn btn-primary" id="createBtn">+ Create Tournament</button>
+</div>
+
+<!-- Add Tournament Form -->
+<div id="addForm" style="display:none;" class="card">
+    <h2>Create New Tournament</h2>
+    <form method="POST" action="{{ url_for('add_tournament') }}" id="tournamentForm">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Tournament Name *</label>
+                <input type="text" name="tournament_name" required>
+            </div>
+            <div class="form-group">
+                <label>Location *</label>
+                <input type="text" name="location" required>
+            </div>
+            <div class="form-group">
+                <label>Prize Pool ($) *</label>
+                <input type="number" name="prize_pool" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Duration *</label>
+                <input type="text" name="duration" placeholder="e.g., 5 days" required>
+            </div>
+            <div class="form-group">
+                <label>Game *</label>
+                <select name="game_id" id="gameSelect" required onchange="filterTeamsCreate()">
+                    <option value="">Select Game</option>
+                    {% for game in games %}
+                    <option value="{{ game.GAME_ID }}">{{ game.GAME_NAME }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status *</label>
+                <select name="status" required>
+                    {% for status in statuses %}
+                    <option value="{{ status }}">{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Select Teams to Participate</label>
+            <div id="teamsContainer" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border); padding: 1rem; border-radius: 0.5rem;">
+                <p style="color: var(--text-secondary);">Select a game first to see available teams</p>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary">Create Tournament</button>
+            <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<!-- Tournaments List -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tournament</th>
+                <th>Location</th>
+                <th>Prize Pool</th>
+                <th>Teams</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Winner</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if tournaments %}
+            {% for t in tournaments %}
+            <tr>
+                <td>{{ t.TK_ID }}</td>
+                <td><strong>{{ t.TOURNAMENT_NAME }}</strong><br><small>{{ t.GAME_NAME }}</small></td>
+                <td>{{ t.LOCATION }}</td>
+                <td>${{ "{:,}".format(t.PRIZE_POOL|int) }}</td>
+                <td><span class="badge" style="background: var(--accent-cyan); color: white;">{{ t.team_count }}</span></td>
+                <td>{{ t.DURATION }}</td>
+                <td>
+                    <span class="badge" data-status="{{ t.STATUS|lower }}">{{ t.STATUS }}</span>
+                </td>
+                <td>{{ t.WINNER_NAME or '—' }}</td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-sm btn-secondary edit-btn" data-id="{{ t.TK_ID }}">Edit</button>
+                        <button class="btn btn-sm btn-info team-btn" data-id="{{ t.TK_ID }}">Teams</button>
+                        
+                        {% if t.STATUS == 'UPCOMING' %}
+                        <form method="POST" action="{{ url_for('change_tournament_status', tk_id=t.TK_ID, status='ONGOING') }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-primary">Start</button>
+                        </form>
+                        {% elif t.STATUS == 'ONGOING' %}
+                        <form method="POST" action="{{ url_for('change_tournament_status', tk_id=t.TK_ID, status='COMPLETED') }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-success">Complete</button>
+                        </form>
+                        {% endif %}
+                        
+                        <form method="POST" action="{{ url_for('delete_tournament', tk_id=t.TK_ID) }}" style="display:inline;" onsubmit="return confirm('Delete this tournament? This will remove all associated data.');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            
+            <!-- Inline Edit Form -->
+            <tr class="edit-form-row" data-id="{{ t.TK_ID }}" style="display:none;">
+                <td colspan="9">
+                    <div class="card">
+                        <h3>Edit: {{ t.TOURNAMENT_NAME }}</h3>
+                        <form method="POST" action="{{ url_for('update_tournament', tk_id=t.TK_ID) }}">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Name</label>
+                                    <input type="text" name="tournament_name" value="{{ t.TOURNAMENT_NAME }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Location</label>
+                                    <input type="text" name="location" value="{{ t.LOCATION }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prize Pool</label>
+                                    <input type="number" step="0.01" name="prize_pool" value="{{ t.PRIZE_POOL }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Duration</label>
+                                    <input type="text" name="duration" value="{{ t.DURATION }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Game</label>
+                                    <select name="game_id" required>
+                                        {% for g in games %}
+                                        <option value="{{ g.GAME_ID }}" {% if g.GAME_ID == t.GAME_ID %}selected{% endif %}>{{ g.GAME_NAME }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select name="status" required>
+                                        {% for s in statuses %}
+                                        <option value="{{ s }}" {% if s == t.STATUS %}selected{% endif %}>{{ s }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <button type="button" class="btn btn-secondary cancel-edit-btn" data-id="{{ t.TK_ID }}">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 2rem;">No tournaments found</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge[data-status="upcoming"] { 
+    background: #6d4c41; 
+    color: white; 
+}
+
+.badge[data-status="ongoing"] { 
+    background: #1565c0; 
+    color: white; 
+}
+
+.badge[data-status="completed"] { 
+    background: #2e7d32; 
+    color: white; 
+}
+
+.btn-info {
+    background: #0097a7;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #00838f;
+}
+</style>
+
+<script>
+const teamsData = JSON.parse('{{ teams | tojson | safe }}');
+
+// Create Tournament Button
+document.getElementById('createBtn').addEventListener('click', function() {
+    document.getElementById('addForm').style.display = 'block';
+});
+
+// Cancel Add Form
+document.getElementById('cancelAddBtn').addEventListener('click', function() {
+    document.getElementById('addForm').style.display = 'none';
+    document.getElementById('tournamentForm').reset();
+});
+
+// Edit Button Handler
+document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        const row = document.querySelector('.edit-form-row[data-id="' + id + '"]');
+        if (row) {
+            row.style.display = 'table-row';
+        }
+    });
+});
+
+// Teams Button Handler
+document.querySelectorAll('.team-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        window.location.href = '/admin/tournaments/manage-teams/' + id;
+    });
+});
+
+// Cancel Edit Button Handler
+document.querySelectorAll('.cancel-edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        const row = document.querySelector('.edit-form-row[data-id="' + id + '"]');
+        if (row) {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Filter Teams Function (for create form)
+function filterTeamsCreate() {
+    const gameId = parseInt(document.getElementById('gameSelect').value);
+    const container = document.getElementById('teamsContainer');
+    
+    if (!gameId) {
+        container.innerHTML = '<p style="color: var(--text-secondary);">Select a game first</p>';
+        return;
+    }
+    
+    const filtered = teamsData.filter(function(t) {
+        return t.GAME_ID === gameId;
+    });
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary);">No teams available for this game</p>';
+        return;
+    }
+    
+    let html = '';
+    filtered.forEach(function(team) {
+        html += '<label style="display: block; padding: 0.5rem; cursor: pointer;">' +
+                '<input type="checkbox" name="team_ids" value="' + team.TEAM_ID + '" style="margin-right: 0.5rem;">' +
+                team.TEAM_NAME +
+                '</label>';
+    });
+    container.innerHTML = html;
+}
+</script>
+{% endblock %}

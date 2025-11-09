@@ -1,0 +1,37 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Manage Teams - {{ tournament.TOURNAMENT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="management-header">
+    <h1>Manage Teams for {{ tournament.TOURNAMENT_NAME }}</h1>
+</div>
+
+<div class="card">
+    <form method="POST">
+        <div class="form-group">
+            <label>Select Teams to Participate in This Tournament</label>
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); padding: 1rem; border-radius: 0.5rem;">
+                {% if teams %}
+                    {% for team in teams %}
+                    <label style="display: block; padding: 0.75rem; cursor: pointer; border-radius: 0.5rem; transition: background 0.2s;">
+                        <input type="checkbox" name="team_ids" value="{{ team.TEAM_ID }}" 
+                               {% if team.TEAM_ID in current_team_ids %}checked{% endif %}
+                               style="margin-right: 0.5rem;">
+                        <strong>{{ team.TEAM_NAME }}</strong>
+                    </label>
+                    {% endfor %}
+                {% else %}
+                <p style="color: var(--text-secondary);">No teams available for this game</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary">Save Teams</button>
+                <a href="{{ url_for('admin_tournaments') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

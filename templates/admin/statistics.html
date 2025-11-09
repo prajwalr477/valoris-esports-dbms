@@ -1,0 +1,185 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Statistics Management{% endblock %}
+
+{% block content %}
+<h1>Statistics Management - Record Match Results</h1>
+
+<div class="card">
+    <h2>Record Match Result</h2>
+    
+    {% if tournaments %}
+    <form method="POST" action="{{ url_for('record_match') }}" id="matchForm">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Tournament (Ongoing with 2+ teams) *</label>
+                <select name="tournament_id" id="tournamentSelect" required onchange="loadTeams()">
+                    <option value="">Select Tournament</option>
+                    {% for t in tournaments %}
+                    <option value="{{ t.TK_ID }}">{{ t.TOURNAMENT_NAME }} ({{ t.team_count }} teams)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Winner *</label>
+                <select name="winner_id" id="winnerSelect" required onchange="updateLoserOptions()">
+                    <option value="">Select winning team</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Loser *</label>
+                <select name="loser_id" id="loserSelect" required>
+                    <option value="">Select losing team</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Points Awarded to Winner *</label>
+                <input type="number" name="points" value="3" min="1" required>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Record Match Result</button>
+    </form>
+    {% else %}
+    <div style="padding: 2rem; text-align: center; background: rgba(255,193,7,0.1); border-radius: 0.5rem;">
+        <i class="bi bi-info-circle" style="font-size: 2rem; color: var(--accent-orange); margin-bottom: 0.5rem;"></i>
+        <p style="color: var(--text-secondary); margin: 0;">
+            No ONGOING tournaments with 2 or more teams available for match recording.
+        </p>
+        <p style="color: var(--text-tertiary); font-size: 0.9rem; margin-top: 0.5rem;">
+            To record matches, make sure tournaments are marked as ONGOING and have at least 2 participating teams.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Current Standings for ONGOING Tournaments -->
+<div class="card">
+    <h2>Live Tournament Standings (Ongoing Only)</h2>
+    
+    {% if standings %}
+        {% set current_name = namespace(value=None) %}
+        {% for standing in standings %}
+            {% if standing.TOURNAMENT_NAME != current_name.value %}
+                {% if current_name.value is not none %}
+                </tbody></table></div>
+                {% endif %}
+                {% set current_name.value = standing.TOURNAMENT_NAME %}
+                
+                <!-- Tournament Name Header -->
+                <div style="background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%); padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">
+                    <h3 style="margin: 0; color: white; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-trophy"></i>
+                        {{ standing.TOURNAMENT_NAME }}
+                        <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.85rem; margin-left: auto;">
+                            ONGOING
+                        </span>
+                    </h3>
+                </div>
+                
+                <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Rank</th>
+                            <th>Team</th>
+                            <th style="text-align: center;">Wins</th>
+                            <th style="text-align: center;">Losses</th>
+                            <th style="text-align: center;">Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            {% endif %}
+            <tr {% if standing.RANKING == 1 %}class="leader-row"{% endif %}>
+                <td style="text-align: center; font-weight: 700; font-size: 1.1rem;">
+                    {% if standing.RANKING == 1 %}
+                        <i class="bi bi-trophy-fill" style="color: #ffd700; font-size: 1.3rem;"></i>
+                    {% elif standing.RANKING == 2 %}
+                        <i class="bi bi-award" style="color: #c0c0c0; font-size: 1.2rem;"></i>
+                    {% elif standing.RANKING == 3 %}
+                        <i class="bi bi-award" style="color: #cd7f32; font-size: 1.2rem;"></i>
+                    {% else %}
+                        #{{ standing.RANKING }}
+                    {% endif %}
+                </td>
+                <td {% if standing.RANKING == 1 %}style="font-weight: 700;"{% endif %}>
+                    {{ standing.TEAM_NAME }}
+                </td>
+                <td style="text-align: center; color: var(--accent-green); font-weight: 600;">{{ standing.WINS }}</td>
+                <td style="text-align: center; color: var(--accent-orange); font-weight: 600;">{{ standing.LOSSES }}</td>
+                <td style="text-align: center; font-weight: 700; font-size: 1.1rem;">{{ standing.POINTS }}</td>
+            </tr>
+        {% endfor %}
+        </tbody></table></div>
+    {% else %}
+        <div style="padding: 2rem; text-align: center;">
+            <i class="bi bi-inbox" style="font-size: 2.5rem; color: var(--text-tertiary); margin-bottom: 1rem;"></i>
+            <p style="color: var(--text-secondary); margin: 0;">
+                No ongoing tournament standings to display.
+            </p>
+            <p style="color: var(--text-tertiary); font-size: 0.9rem; margin-top: 0.5rem;">
+                Standings will appear here once tournaments are marked as ONGOING and have match results recorded.
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.leader-row {
+    background: linear-gradient(90deg, rgba(255,215,0,0.15) 0%, transparent 100%);
+}
+</style>
+
+<script>
+let allTeams = {};
+
+async function loadTeams() {
+    const tournamentId = document.getElementById('tournamentSelect').value;
+    const winnerSelect = document.getElementById('winnerSelect');
+    const loserSelect = document.getElementById('loserSelect');
+    
+    winnerSelect.innerHTML = '<option value="">Select winning team</option>';
+    loserSelect.innerHTML = '<option value="">Select losing team</option>';
+    
+    if (!tournamentId) {
+        allTeams = {};
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/admin/statistics/get-teams/${tournamentId}`);
+        const data = await response.json();
+        allTeams = data.teams || [];
+        
+        if (allTeams.length === 0) {
+            winnerSelect.innerHTML = '<option value="">No teams in this tournament</option>';
+            loserSelect.innerHTML = '<option value="">No teams in this tournament</option>';
+            return;
+        }
+        
+        allTeams.forEach(team => {
+            winnerSelect.innerHTML += `<option value="${team.TEAM_ID}">${team.TEAM_NAME}</option>`;
+            loserSelect.innerHTML += `<option value="${team.TEAM_ID}">${team.TEAM_NAME}</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading teams:', error);
+        alert('Error loading teams for this tournament');
+    }
+}
+
+function updateLoserOptions() {
+    const winnerId = document.getElementById('winnerSelect').value;
+    const loserSelect = document.getElementById('loserSelect');
+    
+    loserSelect.innerHTML = '<option value="">Select losing team</option>';
+    
+    allTeams.forEach(team => {
+        if (team.TEAM_ID.toString() !== winnerId) {
+            loserSelect.innerHTML += `<option value="${team.TEAM_ID}">${team.TEAM_NAME}</option>`;
+        }
+    });
+}
+</script>
+{% endblock %}

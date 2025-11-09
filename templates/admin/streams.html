@@ -1,0 +1,144 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Streams Management{% endblock %}
+
+{% block content %}
+<div class="management-header">
+    <h1>Tournament Streams Management</h1>
+    <button class="btn btn-primary" id="addStreamBtn">+ Add Stream</button>
+</div>
+
+<!-- Add Stream Form -->
+<div id="addStreamForm" style="display:none;" class="card">
+    <h2>Add Tournament Stream</h2>
+    <form method="POST" action="{{ url_for('add_stream') }}" id="streamForm">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Tournament *</label>
+                <select name="tournament_id" id="tournamentSelect" required>
+                    <option value="">-- Select a Tournament --</option>
+                    {% if tournaments %}
+                        {% for tournament in tournaments %}
+                        <option value="{{ tournament.TK_ID }}">{{ tournament.TOURNAMENT_NAME }} (ID: {{ tournament.TK_ID }})</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">No tournaments available</option>
+                    {% endif %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Platform *</label>
+                <select name="platform" id="platformSelect" required>
+                    <option value="">-- Select Platform --</option>
+                    {% for platform in platforms %}
+                    <option value="{{ platform }}">{{ platform }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Language *</label>
+                <select name="language" id="languageSelect" required>
+                    <option value="">-- Select Language --</option>
+                    {% for lang in languages %}
+                    <option value="{{ lang }}">{{ lang }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Stream URL *</label>
+            <input type="url" name="stream_url" id="streamUrl" placeholder="https://twitch.tv/..." required>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary">Add Stream</button>
+            <button type="button" class="btn btn-secondary" id="cancelStreamBtn">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<!-- Streams List -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Stream ID</th>
+                <th>Tournament</th>
+                <th>Platform</th>
+                <th>Stream URL</th>
+                <th>Language</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if streams %}
+            {% for stream in streams %}
+            <tr>
+                <td>{{ stream.STREAM_ID }}</td>
+                <td><strong>{{ stream.TOURNAMENT_NAME }}</strong><br><small>ID: {{ stream.TK_ID }}</small></td>
+                <td><span class="badge" style="background: var(--accent-cyan); color: white;">{{ stream.PLATFORM }}</span></td>
+                <td>
+                    <a href="{{ stream.URL }}" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">
+                        {{ stream.URL[:50] }}{% if stream.URL|length > 50 %}...{% endif %}
+                    </a>
+                </td>
+                <td>{{ stream.LANGUAGE }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('delete_stream', stream_id=stream.STREAM_ID) }}" style="display:inline;" onsubmit="return confirm('Delete this stream?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem;">No streams found</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-right: 0.25rem;
+}
+</style>
+
+<script>
+// Add Stream Button
+document.getElementById('addStreamBtn').addEventListener('click', function() {
+    document.getElementById('tournamentSelect').value = '';
+    document.getElementById('platformSelect').value = '';
+    document.getElementById('languageSelect').value = '';
+    document.getElementById('streamUrl').value = '';
+    
+    document.getElementById('addStreamForm').style.display = 'block';
+});
+
+// Cancel Stream Form
+document.getElementById('cancelStreamBtn').addEventListener('click', function() {
+    document.getElementById('addStreamForm').style.display = 'none';
+    document.getElementById('streamForm').reset();
+});
+
+// Form submission handler
+document.getElementById('streamForm').addEventListener('submit', function(e) {
+    const tournamentId = document.getElementById('tournamentSelect').value;
+    
+    if (!tournamentId || tournamentId === '') {
+        e.preventDefault();
+        alert('Please select a tournament');
+        return false;
+    }
+});
+</script>
+{% endblock %}

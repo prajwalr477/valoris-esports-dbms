@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ team.TEAM_NAME }} - Team Details{% endblock %}
+{% block content %}
+{% if team %}
+<h1>{{ team.TEAM_NAME }}</h1>
+<div class="card">
+    <h2>Team Information</h2>
+    <p><strong>Game:</strong> {{ team.GAME_NAME }}</p>
+    <p><strong>Region:</strong> {{ team.REGION }}</p>
+    <p><strong>Coach:</strong> {{ team.COACH }}</p>
+</div>
+
+<div class="card">
+    <h2>Team Statistics</h2>
+    <p><strong>Wins:</strong> {{ team.WINS }}</p>
+    <p><strong>Losses:</strong> {{ team.LOSSES }}</p>
+    <p><strong>Points:</strong> {{ team.POINTS }}</p>
+    <p><strong>Ranking:</strong> #{{ team.RANKING }}</p>
+</div>
+
+<div class="card">
+    <h2>Sponsorships</h2>
+    {% if sponsorships %}
+        {% for sponsor in sponsorships %}
+        <p>• {{ sponsor.NAME }} ({{ sponsor.INDUSTRY }}) - ${{ "{:,}".format(sponsor.AMOUNT) }}</p>
+        {% endfor %}
+    {% else %}
+        <p>No sponsorships yet</p>
+    {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

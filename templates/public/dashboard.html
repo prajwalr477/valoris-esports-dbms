@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Rankings Dashboard{% endblock %}
+{% block content %}
+<h1><i class="bi bi-bar-chart-fill"></i> Global Rankings</h1>
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Team Name</th>
+                <th>Game</th>
+                <th>Region</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for team in teams %}
+            <tr>
+                <td><strong>#{{ team.RANKING }}</strong></td>
+                <td><a href="{{ url_for('team_detail', team_id=team.TEAM_ID) }}">{{ team.TEAM_NAME }}</a></td>
+                <td>{{ team.GAME_NAME }}</td>
+                <td>{{ team.REGION }}</td>
+                <td>{{ team.WINS }}</td>
+                <td>{{ team.LOSSES }}</td>
+                <td style="color: var(--accent-green)"><strong>{{ team.POINTS }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

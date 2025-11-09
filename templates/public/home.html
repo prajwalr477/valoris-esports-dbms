@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Gaming Tournament Management{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <h1>Competitive Gaming, Elevated</h1>
+    <p>Discover professional esports teams, tournaments, and live streams</p>
+    <div class="hero-buttons">
+        <a href="{{ url_for('tournaments') }}" class="btn btn-primary">
+            <i class="bi bi-trophy"></i> Browse Tournaments
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-bar-chart"></i> View Rankings
+        </a>
+    </div>
+</section>
+
+<!-- Quick Stats -->
+<section class="section">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_teams }}</div>
+            <div class="stat-label">Total Teams</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_tournaments }}</div>
+            <div class="stat-label">Active Tournaments</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_games }}</div>
+            <div class="stat-label">Games Featured</div>
+        </div>
+    </div>
+</section>
+
+<!-- Top 5 Teams -->
+<section class="section">
+    <h2><i class="bi bi-star-fill"></i> Top 5 Teams</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Team Name</th>
+                    <th>Game</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if top_teams %}
+                    {% for team in top_teams %}
+                    <tr>
+                        <td><strong>#{{ team.RANKING }}</strong></td>
+                        <td>{{ team.TEAM_NAME }}</td>
+                        <td>{{ team.GAME_NAME }}</td>
+                        <td><span style="color: var(--accent-green)">{{ team.POINTS }}</span></td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-tertiary);">No teams found</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Featured Tournaments -->
+<section class="section">
+    <h2><i class="bi bi-calendar-event"></i> Upcoming Tournaments</h2>
+    {% if tournaments %}
+    <div class="card-grid">
+        {% for tournament in tournaments %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ tournament.TOURNAMENT_NAME }}</h3>
+            </div>
+            <p><i class="bi bi-geo-alt"></i> {{ tournament.LOCATION }}</p>
+            <p><i class="bi bi-currency-dollar"></i> Prize Pool: ${{ "{:,}".format(tournament.PRIZE_POOL|int) }}</p>
+            <!-- FIXED: Use DURATION instead of START_DATE/END_DATE -->
+            <p><i class="bi bi-hourglass-split"></i> Duration: {{ tournament.DURATION }}</p>
+            <!-- FIXED: Use TK_ID instead of tournament.TOURNAMENT_ID -->
+            <a href="{{ url_for('tournament_detail', tournament_id=tournament.TK_ID) }}" class="btn btn-secondary">
+                View Details <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <p style="color: var(--text-secondary); text-align: center;">No tournaments available</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
