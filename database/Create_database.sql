@@ -160,7 +160,6 @@ CREATE TABLE `sponsorship` (
   PRIMARY KEY (`ID`),
   KEY `idx_sponsorship_team` (`TEAM_ID`),
   CONSTRAINT `fk_sponsorship_team` FOREIGN KEY (`TEAM_ID`) REFERENCES `team` (`TEAM_ID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `chk_amount` CHECK ((`AMOUNT` > 0)),
   CONSTRAINT `chk_sponsor_name` CHECK ((`NAME` <> _utf8mb4''))
 ) ENGINE=InnoDB AUTO_INCREMENT=3145 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -219,6 +218,38 @@ DELIMITER ;;
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'This company already sponsors this team';
     END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = cp850 */ ;
+/*!50003 SET character_set_results = cp850 */ ;
+/*!50003 SET collation_connection  = cp850_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `validate_sponsorship_amount_before_update` BEFORE UPDATE ON `sponsorship` FOR EACH ROW BEGIN
+  
+  IF NEW.AMOUNT IS NULL OR NEW.AMOUNT <= 0 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Sponsorship amount must be greater than 0';
+  END IF;
+
+  IF NEW.AMOUNT > 10000000.00 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Sponsorship amount cannot exceed 10,000,000';
+  END IF;
+
+  
+  
+  
+  
+  
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -479,7 +510,7 @@ CREATE TABLE `tournament_stats` (
 
 LOCK TABLES `tournament_stats` WRITE;
 /*!40000 ALTER TABLE `tournament_stats` DISABLE KEYS */;
-INSERT INTO `tournament_stats` VALUES (4001,2001,8,2,22),(4001,2002,5,4,15),(4001,2003,7,2,19),(4001,2004,4,5,13),(4001,2005,5,4,14),(4001,2006,6,3,16),(4001,2007,7,2,18),(4002,2001,8,2,22),(4002,2002,5,3,15),(4002,2003,7,2,19),(4002,2004,4,4,13),(4002,2005,4,4,14),(4002,2006,5,3,16),(4002,2007,6,2,18),(4003,2001,7,2,22),(4003,2002,5,3,15),(4003,2003,6,1,19),(4003,2004,4,4,13),(4003,2005,4,4,13),(4003,2006,5,3,16),(4003,2007,6,2,17),(4004,2008,4,5,11),(4004,2009,5,4,13),(4004,2010,5,4,15),(4004,2011,5,4,14),(4004,2012,3,6,11),(4004,2013,3,6,10),(4004,2014,6,3,17),(4005,2008,3,5,11),(4005,2009,4,4,13),(4005,2010,5,3,15),(4005,2011,4,4,13),(4005,2012,3,5,10),(4005,2013,2,6,10),(4005,2014,6,3,17),(4006,2008,3,5,10),(4006,2009,4,4,13),(4006,2010,5,3,14),(4006,2011,4,4,13),(4006,2012,3,5,10),(4006,2013,2,6,9),(4006,2014,5,2,16),(4010,2022,0,0,0),(4010,2023,0,0,0),(4010,2024,0,0,0),(4010,2025,0,0,0),(4010,2026,0,0,0),(4011,2027,0,0,0),(4011,2028,0,0,0),(4013,2029,0,0,0),(4013,2030,0,0,0),(4013,2031,0,0,0),(4013,2032,0,0,0),(4013,2033,0,0,0),(4016,2036,0,0,0),(4016,2037,0,0,0),(4016,2038,0,0,0),(4016,2039,0,0,0),(4016,2040,0,0,0),(4019,2043,0,0,0),(4019,2044,0,0,0),(4019,2045,0,0,0),(4019,2046,0,0,0),(4019,2047,0,0,0),(4022,2050,0,0,0),(4022,2051,0,0,0),(4022,2052,0,0,0),(4022,2053,0,0,0),(4022,2054,0,0,0),(4025,2057,0,0,0),(4025,2058,0,0,0),(4025,2059,0,0,0),(4025,2060,0,0,0),(4025,2061,0,0,0),(4028,2064,0,0,0),(4028,2065,0,0,0),(4028,2066,0,0,0),(4028,2067,0,0,0),(4028,2068,0,0,0),(4058,2134,5,4,15),(4058,2135,3,6,10),(4058,2136,6,3,16),(4058,2137,5,4,14),(4058,2138,4,5,13),(4058,2139,4,5,11),(4058,2140,4,5,12),(4059,2134,5,3,15),(4059,2135,3,6,10),(4059,2136,5,3,15),(4059,2137,4,4,14),(4059,2138,4,4,13),(4059,2139,3,5,11),(4059,2140,4,5,12),(4060,2134,5,3,14),(4060,2135,2,5,10),(4060,2136,5,3,15),(4060,2137,4,4,13),(4060,2138,4,4,12),(4060,2139,3,5,11),(4060,2140,3,4,12),(5011,2144,2,1,6),(5011,2145,1,1,3),(5011,2146,1,2,3);
+INSERT INTO `tournament_stats` VALUES (4001,2001,8,2,22),(4001,2002,5,4,15),(4001,2003,7,2,19),(4001,2004,4,5,13),(4001,2005,5,4,14),(4001,2006,6,3,16),(4001,2007,7,2,18),(4002,2001,8,2,22),(4002,2002,5,3,15),(4002,2003,7,2,19),(4002,2004,4,4,13),(4002,2005,4,4,14),(4002,2006,5,3,16),(4002,2007,6,2,18),(4003,2001,7,2,22),(4003,2002,5,3,15),(4003,2003,6,1,19),(4003,2004,4,4,13),(4003,2005,4,4,13),(4003,2006,5,3,16),(4003,2007,6,2,17),(4004,2008,4,5,11),(4004,2009,5,4,13),(4004,2010,5,4,15),(4004,2011,5,4,14),(4004,2012,3,6,11),(4004,2013,3,6,10),(4004,2014,6,3,17),(4005,2008,3,5,11),(4005,2009,4,4,13),(4005,2010,5,3,15),(4005,2011,4,4,13),(4005,2012,3,5,10),(4005,2013,2,6,10),(4005,2014,6,3,17),(4006,2008,3,5,10),(4006,2009,4,4,13),(4006,2010,5,3,14),(4006,2011,4,4,13),(4006,2012,3,5,10),(4006,2013,2,6,9),(4006,2014,5,2,16),(4010,2022,0,0,0),(4010,2023,0,0,0),(4010,2024,0,0,0),(4010,2025,0,0,0),(4010,2026,0,0,0),(4011,2027,0,0,0),(4011,2028,0,0,0),(4013,2029,0,0,0),(4013,2030,0,0,0),(4013,2031,0,0,0),(4013,2032,0,0,0),(4013,2033,0,0,0),(4016,2036,0,0,0),(4016,2037,0,0,0),(4016,2038,0,0,0),(4016,2039,0,0,0),(4016,2040,0,0,0),(4019,2043,0,0,0),(4019,2044,0,0,0),(4019,2045,0,0,0),(4019,2046,0,0,0),(4019,2047,0,0,0),(4022,2050,0,0,0),(4022,2051,0,0,0),(4022,2052,0,0,0),(4022,2053,0,0,0),(4022,2054,0,0,0),(4025,2057,0,0,0),(4025,2058,0,0,0),(4025,2059,0,0,0),(4025,2060,0,0,0),(4025,2061,0,0,0),(4028,2064,0,0,0),(4028,2065,0,0,0),(4028,2066,0,0,0),(4028,2067,0,0,0),(4028,2068,0,0,0),(4058,2134,5,4,15),(4058,2135,3,6,10),(4058,2136,6,3,16),(4058,2137,5,4,14),(4058,2138,4,5,13),(4058,2139,4,5,11),(4058,2140,4,5,12),(4059,2134,5,3,15),(4059,2135,3,6,10),(4059,2136,5,3,15),(4059,2137,4,4,14),(4059,2138,4,4,13),(4059,2139,3,5,11),(4059,2140,4,5,12),(4060,2134,5,3,14),(4060,2135,2,5,10),(4060,2136,5,3,15),(4060,2137,4,4,13),(4060,2138,4,4,12),(4060,2139,3,5,11),(4060,2140,3,4,12),(5011,2144,10,1,30),(5011,2145,2,7,6),(5011,2146,1,5,3);
 /*!40000 ALTER TABLE `tournament_stats` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -528,7 +559,6 @@ CREATE TABLE `tournaments` (
   KEY `fk_tournament_winner` (`WINNER_TEAM_ID`),
   CONSTRAINT `fk_tournament_game` FOREIGN KEY (`GAME_ID`) REFERENCES `games` (`GAME_ID`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_tournament_winner` FOREIGN KEY (`WINNER_TEAM_ID`) REFERENCES `team` (`TEAM_ID`),
-  CONSTRAINT `chk_prize_pool` CHECK ((`PRIZE_POOL` > 0)),
   CONSTRAINT `chk_tournament_name` CHECK ((`TOURNAMENT_NAME` <> _utf8mb4''))
 ) ENGINE=InnoDB AUTO_INCREMENT=5012 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -575,6 +605,33 @@ DELIMITER ;;
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Invalid tournament status';
     END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = cp850 */ ;
+/*!50003 SET character_set_results = cp850 */ ;
+/*!50003 SET collation_connection  = cp850_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `validate_tournament_prize_pool_before_update` BEFORE UPDATE ON `tournaments` FOR EACH ROW BEGIN
+  
+  IF NEW.PRIZE_POOL IS NULL OR NEW.PRIZE_POOL < 0 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Prize pool must be >= 0';
+  END IF;
+
+  
+  
+  
+  
+  
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1183,4 +1240,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-09 22:53:30
+-- Dump completed on 2025-11-10  1:32:25
