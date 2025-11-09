@@ -94,22 +94,8 @@ The database/ folder contains SQL files. Apply them in order (ensure MySQL is ru
 
 1) Create tables and schema
 ```bash
-mysql -u root -p < database/p1.sql
+mysql -u root -p < database/Create_database.sql
 ```
-
-2) Create procedures, functions, and triggers
-```bash
-mysql -u root -p < database/procedures.sql
-```
-
-3) Initialize admin user
-```bash
-mysql -u root -p < database/init_admin_user.sql
-```
-
-Additional SQL files are for adding default values to table
-
----
 
 ## Run & Access
 
@@ -145,10 +131,7 @@ valoris-esports-dbms/
 ├── requirements.txt                # Python dependencies
 ├── database/
 │   ├── db_connection.py            # Database connection module
-│   ├── p1.sql                      # Tables and schema
-│   ├── procedures.sql              # Procedures, functions, triggers
-│   ├── init_admin_user.sql         # Admin user initialization
-│   └── add_values.sql         # Database views and utility functions
+│   ├── Create_database.sql         # Create the database with valuees
 ├── static/
 │   ├── css/
 │   │   ├── admin.css               # Admin panel styles
@@ -157,7 +140,7 @@ valoris-esports-dbms/
 │       ├── admin.js                # Admin panel functionality
 │       └── main.js                 # Main application scripts
 └── docs/
-│   └── Final_project_report.pdf
+│   └── Final_report.pdf
 └── templates/
     ├── base.html                   # Base template for all pages
     ├── admin/                      # Admin panel templates
