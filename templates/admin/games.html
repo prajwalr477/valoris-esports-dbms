@@ -28,10 +28,6 @@
             <label>Release Date</label>
             <input type="date" name="release_date" required>
         </div>
-        <div class="form-group">
-            <label>Max Players</label>
-            <input type="number" name="max_players" required>
-        </div>
         <button type="submit" class="btn btn-primary">Add Game</button>
         <button type="button" onclick="document.getElementById('addGameForm').style.display='none'" class="btn btn-secondary">Cancel</button>
     </form>
@@ -46,7 +42,6 @@
                 <th>Genre</th>
                 <th>Developer</th>
                 <th>Release Date</th>
-                <th>Max Players</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -58,7 +53,6 @@
                 <td>{{ game.GENRE }}</td>
                 <td>{{ game.DEVELOPER }}</td>
                 <td>{{ game.RELEASE_DATE }}</td>
-                <td>{{ game.MAX_PLAYERS }}</td>
                 <td>
                     <a href="{{ url_for('delete_game', game_id=game.GAME_ID) }}" 
                        onclick="return confirm('Are you sure?')" 

@@ -231,8 +231,6 @@ def tournaments():
     try:
         status = request.args.get('status', 'ALL')
         
-        # Instead of: execute_procedure('get_tournaments_filtered', (status,))
-        # Use this simpler approach:
         
         if status in ('UPCOMING', 'ONGOING', 'COMPLETED'):
             tournaments_list = execute_query(
@@ -430,7 +428,7 @@ def admin_dashboard():
 def admin_games():
     """Games management"""
     try:
-        games = execute_query("SELECT * FROM games")
+        games = execute_query("SELECT * FROM games ORDER BY GAME_ID DESC")
         return render_template('admin/games.html', games=games or [])
     except Exception as e:
         print(f"Error: {e}")
@@ -439,24 +437,23 @@ def admin_games():
 @app.route('/admin/games/add', methods=['POST'])
 @login_required
 def add_game():
-    """Add new game"""
     try:
         name = request.form.get('game_name')
         genre = request.form.get('genre')
         developer = request.form.get('developer')
         release_date = request.form.get('release_date')
-        max_players = request.form.get('max_players')
-
+        
         execute_query("""
-            INSERT INTO games (GAME_NAME, GENRE, DEVELOPER, RELEASE_DATE, MAX_PLAYERS)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (name, genre, developer, release_date, max_players), fetch=False)
-
+            INSERT INTO games (GAME_NAME, GENRE, DEVELOPER, RELEASE_DATE)
+            VALUES (%s, %s, %s, %s)
+        """, (name, genre, developer, release_date), fetch=False)
+        
         flash('Game added successfully!', 'success')
     except Exception as e:
         flash(f'Error adding game: {str(e)}', 'error')
-
+    
     return redirect(url_for('admin_games'))
+
 
 @app.route('/admin/games/delete/<int:game_id>')
 @login_required
